@@ -59,4 +59,4 @@
 
 ---
 
-**验证码：9090** | **技术架构：Vercel Serverless + 云端同步**
+**技术架构：Vercel Serverless + 云端同步**
