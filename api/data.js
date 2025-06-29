@@ -1,6 +1,4 @@
 // Vercel Serverless Function - 数据存储API
-// 文件路径: /api/data.js
-
 let globalData = {
     studentData: [],
     dropoutData: {},
@@ -8,7 +6,7 @@ let globalData = {
     lastUpdated: null
 };
 
-export default function handler(req, res) {
+module.exports = (req, res) => {
     // 设置CORS头，允许跨域访问
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
