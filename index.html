@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生流失统计系统 - 云端同步版</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 1.8em;
+            margin-bottom: 8px;
+        }
+        
+        .import-section {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #28a745;
+        }
+        
+        .import-section h3 {
+            color: #155724;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        .file-input {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-input-label {
+            display: block;
+            padding: 15px 20px;
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+        
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        
+        .data-preview {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+        }
+        
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        
+        .preview-table th, .preview-table td {
+            border: 1px solid #ddd;
+            padding: 4px 8px;
+            text-align: left;
+        }
+        
+        .preview-table th {
+            background: #e9ecef;
+            font-weight: bold;
+        }
+        
+        .sync-panel {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #dee2e6;
+        }
+        
+        .sync-panel h3 {
+            color: #495057;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-admin {
+            background: linear-gradient(45deg, #6f42c1, #e83e8c);
+            font-size: 18px;
+            padding: 15px 30px;
+            border-radius: 12px;
+        }
+        
+        .btn-admin:hover {
+            box-shadow: 0 4px 12px rgba(111, 66, 193, 0.4);
+        }
+        
+        .admin-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #e9ecef;
+        }
+        
+        /* 底部操作按钮样式 */
+        .bottom-actions {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            border-top: 3px solid #667eea;
+            z-index: 1000;
+        }
+        
+        .action-btn {
+            flex: 1;
+            max-width: 150px;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 8px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .save-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+        
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+        
+        .sync-btn {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+        
+        .sync-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
+        }
+        
+        .back-btn {
+            background: linear-gradient(45deg, #6c757d, #495057);
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(108, 117, 125, 0.4);
+        }
+        
+        /* 为底部按钮预留空间 */
+        .student-list {
+            padding-bottom: 100px;
+        }
+        
+        .btn-sync {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+        
+        .btn-import {
+            background: linear-gradient(45deg, #ffc107, #fd7e14);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+        }
+        
+        .login-section {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        
+        select, input {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .student-list {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            margin-bottom: 20px;
+        }
+        
+        .student-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 300px;
+        }
+        
+        .student-table th, .student-table td {
+            border: 1px solid #ddd;
+            padding: 10px 8px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .student-table th {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .col-index { width: 12%; }
+        .col-name { width: 28%; }
+        .col-class { width: 40%; }
+        .col-dropout { width: 20%; }
+        
+        .name-gender {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .gender {
+            font-size: 11px;
+            color: #666;
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        
+        .alert {
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .data-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .data-info h4 {
+            color: #1565c0;
+            margin-bottom: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 12px;
+            border: 1px solid #bbdefb;
+        }
+        
+        .column-mapping {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .mapping-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .mapping-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .mapping-item label {
+            min-width: 60px;
+            font-size: 12px;
+            margin-bottom: 0;
+        }
+        
+        .mapping-item select {
+            flex: 1;
+            padding: 6px 10px;
+            font-size: 12px;
+            max-width: none;
+        }
+        
+        @media (max-width: 768px) {
+            body { padding: 5px; }
+            .container { padding: 15px; }
+            .header h1 { font-size: 1.5em; }
+            .student-table th, .student-table td { padding: 8px 6px; font-size: 13px; }
+            .stats-grid { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+            .mapping-grid { grid-template-columns: 1fr; }
+            
+            /* 移动端底部按钮适配 */
+            .bottom-actions {
+                padding: 12px 10px;
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            
+            .action-btn {
+                flex: 1;
+                max-width: none;
+                margin: 0 4px;
+                padding: 10px 8px;
+                font-size: 14px;
+                border-radius: 8px;
+            }
+            
+            .student-list {
+                padding-bottom: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 学生流失统计系统</h1>
+            <p>支持动态导入Excel数据的智能统计系统</p>
+            <div style="margin-top: 8px; font-size: 0.8em; color: #28a745; font-weight: bold;">
+                📋 动态Excel导入 | ☁️ 真正的云端数据同步 | 📱 多设备实时同步
+            </div>
+        </div>
+        
+        <!-- 管理员功能按钮 -->
+        <div class="admin-panel">
+            <div style="text-align: center; padding: 15px;">
+                <button class="btn btn-admin" onclick="showAdminAuth()">
+                    🔧 管理员功能
+                </button>
+                <p style="font-size: 12px; color: #6c757d; margin-top: 8px;">
+                    数据导入、删除等管理功能需要验证码
+                </p>
+            </div>
+        </div>
+        
+        <!-- 管理员验证码输入 -->
+        <div id="adminAuth" class="admin-auth" style="display: none;">
+            <div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 2px solid #ffc107;">
+                <h3 style="text-align: center; color: #856404; margin-bottom: 15px;">🔐 管理员验证</h3>
+                <div style="text-align: center;">
+                    <input type="password" id="adminCode" placeholder="请输入管理员验证码" 
+                           style="padding: 12px 15px; border: 2px solid #ffc107; border-radius: 8px; font-size: 16px; width: 200px; text-align: center;">
+                    <div style="margin-top: 15px;">
+                        <button class="btn" onclick="verifyAdmin()" style="background: linear-gradient(45deg, #ffc107, #fd7e14);">
+                            ✅ 验证
+                        </button>
+                        <button class="btn" onclick="hideAdminAuth()" style="background: #6c757d;">
+                            ❌ 取消
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 管理员功能区域（验证后显示） -->
+        <div id="adminSection" class="import-section" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3>📁 管理员 - 数据管理</h3>
+                <button class="btn" onclick="exitAdminMode()" style="background: #6c757d; font-size: 14px; padding: 8px 15px;">
+                    🚪 退出管理员模式
+                </button>
+            </div>
+            <p style="text-align: center; margin-bottom: 15px; color: #6c757d;">
+                支持导入Excel文件（.xlsx/.xls），系统将自动识别学生信息
+            </p>
+            
+            <div class="file-input-wrapper">
+                <input type="file" id="excelFile" class="file-input" accept=".xlsx,.xls" onchange="handleFileImport(event)">
+                <label for="excelFile" class="file-input-label">
+                    📂 选择Excel文件 (.xlsx/.xls)
+                </label>
+            </div>
+            
+            <div id="columnMapping" class="column-mapping" style="display: none;">
+                <h4 style="color: #856404; margin-bottom: 10px;">🔧 列映射配置</h4>
+                <p style="font-size: 12px; color: #6c757d; margin-bottom: 10px;">
+                    请选择Excel中对应的列名，系统将根据您的选择自动匹配数据
+                </p>
+                <div class="mapping-grid">
+                    <div class="mapping-item">
+                        <label>姓名：</label>
+                        <select id="nameColumn"></select>
+                    </div>
+                    <div class="mapping-item">
+                        <label>性别：</label>
+                        <select id="genderColumn"></select>
+                    </div>
+                    <div class="mapping-item">
+                        <label>学院：</label>
+                        <select id="collegeColumn"></select>
+                    </div>
+                    <div class="mapping-item">
+                        <label>班级：</label>
+                        <select id="classColumn"></select>
+                    </div>
+                    <div class="mapping-item">
+                        <label>专业：</label>
+                        <select id="majorColumn"></select>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 15px;">
+                    <button class="btn btn-import" onclick="processImportedData()">✅ 确认导入</button>
+                    <button class="btn btn-danger" onclick="cancelImport()">❌ 取消</button>
+                </div>
+            </div>
+            
+            <div id="dataPreview" class="data-preview" style="display: none;">
+                <h4 style="margin-bottom: 10px; color: #495057;">📋 数据预览（前5行）</h4>
+                <div id="previewContent"></div>
+            </div>
+            
+            <!-- 管理员专用功能 -->
+            <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; border: 2px solid #007bff;">
+                <h4 style="color: #0056b3; margin-bottom: 15px;">📊 数据导出功能</h4>
+                <p style="text-align: center; margin-bottom: 15px; color: #6c757d;">
+                    导出当前所有统计数据，生成Excel报表
+                </p>
+                <div style="text-align: center;">
+                    <button class="btn" onclick="exportDataAdmin()" style="background: linear-gradient(45deg, #28a745, #20c997);">
+                        📊 导出Excel报表
+                    </button>
+                </div>
+            </div>
+            
+            <div style="margin-top: 15px; padding: 15px; background: #f8d7da; border-radius: 8px; border: 2px solid #dc3545;">
+                <h4 style="color: #721c24; margin-bottom: 10px;">⚠️ 危险操作区域</h4>
+                <div style="text-align: center;">
+                    <button class="btn" onclick="clearAllDataAdmin()" style="background: linear-gradient(45deg, #dc3545, #c82333); color: white;">
+                        🗑️ 清空所有数据
+                    </button>
+                </div>
+                <p style="font-size: 12px; color: #721c24; margin-top: 8px; text-align: center;">
+                    此操作将删除所有学生数据和流失记录，请谨慎使用！
+                </p>
+            </div>
+        </div>
+        
+        <div class="data-info" id="dataInfo">
+            <h4>📊 当前数据概况</h4>
+            <div id="dataStats">暂无数据，请导入Excel文件</div>
+        </div>
+        
+        <!-- 通知消息区域 -->
+        <div id="alertContainer" style="margin-bottom: 20px;"></div>
+        
+        <div class="sync-panel">
+            <h3>☁️ 数据同步状态</h3>
+            <div id="syncStatus" style="padding: 12px; background: #e3f2fd; border-radius: 8px; text-align: center; font-size: 14px; color: #1565c0;">
+                📡 准备就绪
+            </div>
+            <p style="text-align: center; margin-top: 10px; font-size: 12px; color: #6c757d;">
+                数据会自动同步到云端，多设备访问时自动获取最新数据
+            </p>
+        </div>
+        
+        <div id="loginSection" class="login-section">
+            <div class="form-group">
+                <label for="collegeSelect">🏫 选择学院：</label>
+                <select id="collegeSelect" onchange="loadClassesByCollege()">
+                    <option value="">请先导入数据或选择学院</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="classSelect">📚 选择班级：</label>
+                <select id="classSelect" disabled>
+                    <option value="">请先选择学院</option>
+                </select>
+            </div>
+            <button class="btn" onclick="loadClass()">进入班级管理</button>
+        </div>
+        
+        <div id="studentSection" class="student-list">
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
+                <h2 id="currentClassName">当前班级</h2>
+                <p id="currentCollegeName"></p>
+                <p>请在流失的学生后面勾选"已流失"标记，然后点击保存数据</p>
+            </div>
+            
+            <div class="table-wrapper">
+                <table class="student-table" id="studentTable">
+                    <thead>
+                        <tr>
+                            <th class="col-index">序号</th>
+                            <th class="col-name">姓名</th>
+                            <th class="col-class">班级</th>
+                            <th class="col-dropout">流失状态</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 底部操作按钮区域 -->
+            <div class="bottom-actions">
+                <button class="action-btn save-btn" onclick="saveClassData()">
+                    💾 保存数据
+                </button>
+                <button class="action-btn sync-btn" onclick="clearCurrentClassSelections()">
+                    🧹 清空勾选
+                </button>
+                <button class="action-btn back-btn" onclick="backToLogin()">
+                    🔙 返回
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        // 学生数据存储
+        let studentData = [];
+        let rawExcelData = null;
+        let excelColumns = [];
+        
+        // 本地数据存储
+        let dropoutData = JSON.parse(localStorage.getItem('dropoutData') || '{}');
+        let classStatus = JSON.parse(localStorage.getItem('classStatus') || '{}');
+        
+        // 初始化页面
+        async function init() {
+            console.log('动态导入系统初始化...');
+            updateSyncStatus('loading');
+            
+            // 首先尝试从云端加载数据
+            try {
+                const response = await fetch('/api/data');
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const cloudData = result.data;
+                    
+                    // 如果云端有数据，使用云端数据
+                    if (cloudData.studentData && cloudData.studentData.length > 0) {
+                        studentData = cloudData.studentData;
+                        dropoutData = cloudData.dropoutData || {};
+                        classStatus = cloudData.classStatus || {};
+                        
+                        // 同时保存到本地作为备份
+                        localStorage.setItem('studentData', JSON.stringify(studentData));
+                        localStorage.setItem('dropoutData', JSON.stringify(dropoutData));
+                        localStorage.setItem('classStatus', JSON.stringify(classStatus));
+                        
+                        console.log('✅ 已从云端加载数据:', studentData.length + '个学生');
+                        showAlert('✅ 已从云端加载最新数据！', 'success');
+                        updateSyncStatus('synced');
+                    } else {
+                        // 云端无数据，尝试加载本地数据
+                        loadLocalData();
+                        updateSyncStatus('local');
+                    }
+                } else {
+                    // 云端加载失败，使用本地数据
+                    loadLocalData();
+                    updateSyncStatus('local');
+                }
+            } catch (error) {
+                console.warn('云端数据加载失败，使用本地数据:', error);
+                loadLocalData();
+                updateSyncStatus('offline');
+            }
+            
+            // 更新界面
+            updateDataInfo();
+            loadCollegeOptions();
+        }
+        
+        // 加载本地数据
+        function loadLocalData() {
+            const savedStudentData = localStorage.getItem('studentData');
+            if (savedStudentData) {
+                try {
+                    studentData = JSON.parse(savedStudentData);
+                    console.log('📱 已加载本地数据:', studentData.length + '个学生');
+                } catch (error) {
+                    console.error('加载本地数据失败:', error);
+                    studentData = [];
+                }
+            }
+        }
+        
+        // 处理Excel文件导入
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.name.match(/\.(xlsx|xls)$/i)) {
+                showAlert('请选择Excel文件（.xlsx或.xls格式）', 'warning');
+                return;
+            }
+            
+            showAlert('正在读取Excel文件...', 'info');
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // 读取第一个工作表
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    
+                    // 转换为JSON数据
+                    rawExcelData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    
+                    if (rawExcelData.length < 2) {
+                        showAlert('Excel文件数据不足，请检查文件内容', 'warning');
+                        return;
+                    }
+                    
+                    // 获取列名（第一行）
+                    excelColumns = rawExcelData[0];
+                    
+                    showExcelPreview();
+                    showColumnMapping();
+                    
+                    showAlert('Excel文件读取成功！请配置列映射', 'success');
+                    
+                } catch (error) {
+                    console.error('Excel读取错误:', error);
+                    showAlert('Excel文件读取失败，请检查文件格式', 'danger');
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+        
+        // 显示Excel数据预览
+        function showExcelPreview() {
+            const previewDiv = document.getElementById('dataPreview');
+            const contentDiv = document.getElementById('previewContent');
+            
+            let tableHTML = '<table class="preview-table"><thead><tr>';
+            
+            // 表头
+            excelColumns.forEach(col => {
+                tableHTML += `<th>${col || '空列'}</th>`;
+            });
+            tableHTML += '</tr></thead><tbody>';
+            
+            // 数据行（最多显示5行）
+            const maxRows = Math.min(6, rawExcelData.length);
+            for (let i = 1; i < maxRows; i++) {
+                tableHTML += '<tr>';
+                excelColumns.forEach((col, index) => {
+                    const cellValue = rawExcelData[i][index] || '';
+                    tableHTML += `<td>${cellValue}</td>`;
+                });
+                tableHTML += '</tr>';
+            }
+            
+            tableHTML += '</tbody></table>';
+            contentDiv.innerHTML = tableHTML;
+            previewDiv.style.display = 'block';
+        }
+        
+        // 显示列映射配置
+        function showColumnMapping() {
+            const mappingDiv = document.getElementById('columnMapping');
+            
+            // 为每个映射下拉框添加选项
+            const selects = ['nameColumn', 'genderColumn', 'collegeColumn', 'classColumn', 'majorColumn'];
+            
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                select.innerHTML = '<option value="">请选择列</option>';
+                
+                excelColumns.forEach((col, index) => {
+                    if (col) {
+                        select.innerHTML += `<option value="${index}">${col}</option>`;
+                    }
+                });
+            });
+            
+            // 智能匹配常用列名
+            autoMatchColumns();
+            
+            // 显示匹配提示
+            showMatchingTips();
+            
+            mappingDiv.style.display = 'block';
+        }
+        
+        // 智能匹配列名 - 增强版
+        function autoMatchColumns() {
+            const mappings = {
+                'nameColumn': [
+                    // 基础匹配
+                    '姓名', '学生姓名', '名字', '学员姓名', '姓  名',
+                    // 英文匹配
+                    'name', 'student_name', 'studentname',
+                    // 常见变体
+                    '姓名:', '姓名：', '学生姓名:', '学生姓名：',
+                    '真实姓名', '学员名字', '学生名字', '学员真实姓名'
+                ],
+                'genderColumn': [
+                    // 基础匹配
+                    '性别', '性  别', '性别:', '性别：',
+                    // 英文匹配
+                    'gender', 'sex',
+                    // 描述性匹配
+                    '男女', '男/女', '学生性别', '学员性别'
+                ],
+                'collegeColumn': [
+                    // 学院相关
+                    '学院', '院系', '所属学院', '学院名称', '院系名称',
+                    '学  院', '学院:', '学院：', '所在学院',
+                    // 英文匹配
+                    'college', 'school', 'department',
+                    // 系部相关
+                    '系部', '系', '所属系部', '系部名称', '学生学院'
+                ],
+                'classColumn': [
+                    // 班级相关
+                    '班级', '班', '所在班级', '班级名称', '学生班级',
+                    '班  级', '班级:', '班级：', '所属班级',
+                    // 英文匹配  
+                    'class', 'className', 'student_class',
+                    // 年级班级
+                    '年级班级', '就读班级', '学员班级', '在读班级'
+                ],
+                'majorColumn': [
+                    // 专业相关
+                    '专业', '所学专业', '专业名称', '学生专业', '就读专业',
+                    '专  业', '专业:', '专业：', '所属专业',
+                    // 英文匹配
+                    'major', 'specialty', 'subject',
+                    // 其他表述
+                    '学习专业', '学员专业', '专业方向', '主修专业'
+                ]
+            };
+            
+            Object.keys(mappings).forEach(selectId => {
+                const select = document.getElementById(selectId);
+                const keywords = mappings[selectId];
+                let bestMatch = -1;
+                let bestScore = 0;
+                
+                for (let i = 0; i < excelColumns.length; i++) {
+                    const col = excelColumns[i];
+                    if (!col) continue;
+                    
+                    // 清理列名（去除空格、标点）
+                    const cleanCol = col.replace(/[\s\:\：\-\—]/g, '').toLowerCase();
+                    
+                    // 计算匹配分数
+                    let score = 0;
+                    for (let keyword of keywords) {
+                        const cleanKeyword = keyword.replace(/[\s\:\：\-\—]/g, '').toLowerCase();
+                        
+                        // 完全匹配 - 最高分
+                        if (cleanCol === cleanKeyword) {
+                            score = 100;
+                            break;
+                        }
+                        // 包含匹配 - 高分
+                        else if (cleanCol.includes(cleanKeyword) || cleanKeyword.includes(cleanCol)) {
+                            score = Math.max(score, 80);
+                        }
+                        // 模糊匹配 - 中等分
+                        else if (keyword.length > 2 && col.includes(keyword.substring(0, 2))) {
+                            score = Math.max(score, 50);
+                        }
+                    }
+                    
+                    // 记录最佳匹配
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMatch = i;
+                    }
+                }
+                
+                // 设置最佳匹配（分数要达到50以上才认为是有效匹配）
+                if (bestMatch >= 0 && bestScore >= 50) {
+                    select.value = bestMatch;
+                    console.log(`${selectId} 匹配到列 "${excelColumns[bestMatch]}" (分数: ${bestScore})`);
+                }
+            });
+        }
+        
+        // 数据清洗辅助函数
+        function cleanString(value) {
+            if (!value) return '';
+            return String(value)
+                .trim()                          // 去除首尾空格
+                .replace(/\s+/g, ' ')           // 合并多个空格为一个
+                .replace(/[\r\n\t]/g, '')       // 去除换行符和制表符
+                .replace(/[""'']/g, '"')        // 统一引号格式
+                .replace(/[（）]/g, match => match === '（' ? '(' : ')'); // 统一括号格式
+        }
+        
+        function normalizeGender(value) {
+            if (!value) return '未知';
+            const cleanValue = cleanString(value).toLowerCase();
+            
+            // 男性标识
+            if (['男', 'male', 'm', '1', 'boy', '男性'].includes(cleanValue)) {
+                return '男';
+            }
+            // 女性标识  
+            if (['女', 'female', 'f', '0', 'girl', '女性'].includes(cleanValue)) {
+                return '女';
+            }
+            
+            return '未知';
+        }
+        
+        // 显示匹配提示
+        function showMatchingTips() {
+            const fieldNames = {
+                'nameColumn': '姓名',
+                'genderColumn': '性别', 
+                'collegeColumn': '学院',
+                'classColumn': '班级',
+                'majorColumn': '专业'
+            };
+            
+            let matchedFields = [];
+            let unmatchedFields = [];
+            
+            Object.keys(fieldNames).forEach(selectId => {
+                const select = document.getElementById(selectId);
+                const fieldName = fieldNames[selectId];
+                
+                if (select.value) {
+                    const columnName = excelColumns[select.value];
+                    matchedFields.push(`✅ ${fieldName} → "${columnName}"`);
+                } else {
+                    unmatchedFields.push(`❌ ${fieldName}`);
+                }
+            });
+            
+            let tipHTML = '<div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin-bottom: 15px;">';
+            tipHTML += '<h4 style="color: #155724; margin-bottom: 10px;">🤖 智能识别结果</h4>';
+            
+            if (matchedFields.length > 0) {
+                tipHTML += '<div style="margin-bottom: 10px;">';
+                tipHTML += '<strong style="color: #28a745;">已自动匹配：</strong><br>';
+                tipHTML += matchedFields.join('<br>');
+                tipHTML += '</div>';
+            }
+            
+            if (unmatchedFields.length > 0) {
+                tipHTML += '<div>';
+                tipHTML += '<strong style="color: #856404;">需要手动选择：</strong><br>';
+                tipHTML += unmatchedFields.join(', ');
+                tipHTML += '</div>';
+            }
+            
+            tipHTML += '<div style="margin-top: 10px; font-size: 12px; color: #666;">';
+            tipHTML += '💡 提示：姓名和班级是必填项，其他字段可选择"请选择列"跳过';
+            tipHTML += '</div>';
+            tipHTML += '</div>';
+            
+            // 在列映射区域前插入提示
+            const mappingDiv = document.getElementById('columnMapping');
+            const existingTip = mappingDiv.querySelector('.matching-tips');
+            if (existingTip) {
+                existingTip.remove();
+            }
+            
+            const tipDiv = document.createElement('div');
+            tipDiv.className = 'matching-tips';
+            tipDiv.innerHTML = tipHTML;
+            mappingDiv.insertBefore(tipDiv, mappingDiv.firstChild);
+        }
+        
+        // 处理导入的数据
+        function processImportedData() {
+            const nameCol = document.getElementById('nameColumn').value;
+            const genderCol = document.getElementById('genderColumn').value;
+            const collegeCol = document.getElementById('collegeColumn').value;
+            const classCol = document.getElementById('classColumn').value;
+            const majorCol = document.getElementById('majorColumn').value;
+            
+            // 验证必要列
+            if (!nameCol || !classCol) {
+                showAlert('姓名和班级是必填列，请选择对应的Excel列', 'warning');
+                return;
+            }
+            
+            try {
+                studentData = [];
+                
+                // 数据处理统计
+                let totalRows = rawExcelData.length - 1; // 减去表头
+                let validRows = 0;
+                let invalidRows = 0;
+                
+                // 处理数据行（跳过表头）
+                for (let i = 1; i < rawExcelData.length; i++) {
+                    const row = rawExcelData[i];
+                    
+                    // 数据清洗和验证
+                    const rawName = row[nameCol];
+                    const rawClass = row[classCol];
+                    
+                    // 跳过完全空行
+                    if (!rawName && !rawClass && !row[genderCol] && !row[collegeCol]) {
+                        invalidRows++;
+                        continue;
+                    }
+                    
+                    // 检查必填字段
+                    if (!rawName || !rawClass) {
+                        invalidRows++;
+                        console.warn(`第${i+1}行数据不完整: 姓名="${rawName}", 班级="${rawClass}"`);
+                        continue;
+                    }
+                    
+                    // 数据清洗和标准化
+                    const cleanName = cleanString(rawName);
+                    const cleanClass = cleanString(rawClass);
+                    const cleanGender = normalizeGender(row[genderCol]);
+                    const cleanCollege = cleanString(row[collegeCol]) || '未分配学院';
+                    const cleanMajor = cleanString(row[majorCol]) || '未指定专业';
+                    
+                    // 验证清洗后的数据
+                    if (cleanName.length === 0 || cleanClass.length === 0) {
+                        invalidRows++;
+                        continue;
+                    }
+                    
+                    const student = {
+                        id: i, // 使用行号作为ID
+                        name: cleanName,
+                        gender: cleanGender,
+                        collegeName: cleanCollege,
+                        className: cleanClass,
+                        major: cleanMajor
+                    };
+                    
+                    studentData.push(student);
+                    validRows++;
+                }
+                
+                console.log(`数据处理完成: 总行数=${totalRows}, 有效=${validRows}, 无效=${invalidRows}`);
+                
+                if (studentData.length === 0) {
+                    showAlert('没有找到有效的学生数据，请检查Excel文件内容', 'warning');
+                    return;
+                }
+                
+                // 保存数据到本地存储
+                localStorage.setItem('studentData', JSON.stringify(studentData));
+                
+                // 清空之前的流失数据（因为是新的学生名单）
+                if (confirm('导入新数据将清空之前的流失统计记录，是否继续？')) {
+                    dropoutData = {};
+                    classStatus = {};
+                    localStorage.setItem('dropoutData', JSON.stringify(dropoutData));
+                    localStorage.setItem('classStatus', JSON.stringify(classStatus));
+                }
+                
+                // 更新界面
+                updateDataInfo();
+                loadCollegeOptions();
+                
+                // 隐藏导入配置
+                document.getElementById('columnMapping').style.display = 'none';
+                document.getElementById('dataPreview').style.display = 'none';
+                
+                // 显示详细的导入统计
+                let importMsg = `✅ 数据导入完成！`;
+                importMsg += `\n📊 处理统计: 总计${totalRows}行，成功导入${validRows}个学生`;
+                if (invalidRows > 0) {
+                    importMsg += `，跳过${invalidRows}行无效数据`;
+                }
+                importMsg += `\n☁️ 正在同步到云端...`;
+                
+                showAlert(importMsg, 'success');
+                
+                // 同步到云端
+                manualSync();
+                
+                // 清空文件输入
+                document.getElementById('excelFile').value = '';
+                
+            } catch (error) {
+                console.error('数据处理错误:', error);
+                showAlert('数据处理失败：' + error.message, 'danger');
+            }
+        }
+        
+        // 取消导入
+        function cancelImport() {
+            document.getElementById('columnMapping').style.display = 'none';
+            document.getElementById('dataPreview').style.display = 'none';
+            document.getElementById('excelFile').value = '';
+            rawExcelData = null;
+            excelColumns = [];
+        }
+        
+        // 更新数据概况
+        function updateDataInfo() {
+            const infoDiv = document.getElementById('dataStats');
+            
+            if (studentData.length === 0) {
+                infoDiv.innerHTML = '暂无数据，请导入Excel文件';
+                return;
+            }
+            
+            // 统计各学院数据
+            const collegeStats = {};
+            studentData.forEach(student => {
+                const college = student.collegeName;
+                if (!collegeStats[college]) {
+                    collegeStats[college] = new Set();
+                }
+                collegeStats[college].add(student.className);
+            });
+            
+            let statsHTML = `<div class="stats-grid">`;
+            statsHTML += `<div class="stat-item"><strong>${studentData.length}</strong><br>总学生数</div>`;
+            statsHTML += `<div class="stat-item"><strong>${Object.keys(collegeStats).length}</strong><br>学院数</div>`;
+            
+            const totalClasses = Object.values(collegeStats).reduce((sum, classes) => sum + classes.size, 0);
+            statsHTML += `<div class="stat-item"><strong>${totalClasses}</strong><br>班级数</div>`;
+            
+            Object.keys(collegeStats).forEach(college => {
+                const classCount = collegeStats[college].size;
+                const studentCount = studentData.filter(s => s.collegeName === college).length;
+                statsHTML += `<div class="stat-item"><strong>${college}</strong><br>${studentCount}人 ${classCount}班</div>`;
+            });
+            
+            statsHTML += `</div>`;
+            infoDiv.innerHTML = statsHTML;
+        }
+        
+        // 加载学院选项
+        function loadCollegeOptions() {
+            const colleges = [...new Set(studentData.map(s => s.collegeName))].sort();
+            const collegeSelect = document.getElementById('collegeSelect');
+            
+            collegeSelect.innerHTML = '<option value="">请先选择学院</option>';
+            colleges.forEach(college => {
+                const option = document.createElement('option');
+                option.value = college;
+                option.textContent = college + '学院';
+                collegeSelect.appendChild(option);
+            });
+        }
+        
+        // 根据学院加载班级
+        function loadClassesByCollege() {
+            const selectedCollege = document.getElementById('collegeSelect').value;
+            const classSelect = document.getElementById('classSelect');
+            
+            if (!selectedCollege) {
+                classSelect.innerHTML = '<option value="">请先选择学院</option>';
+                classSelect.disabled = true;
+                return;
+            }
+            
+            const classes = [...new Set(studentData
+                .filter(s => s.collegeName === selectedCollege)
+                .map(s => s.className))].sort();
+            
+            classSelect.innerHTML = '<option value="">请选择班级</option>';
+            classSelect.disabled = false;
+            
+            classes.forEach(className => {
+                const option = document.createElement('option');
+                option.value = className;
+                option.textContent = className;
+                classSelect.appendChild(option);
+            });
+        }
+        
+        // 加载班级
+        function loadClass() {
+            const selectedClass = document.getElementById('classSelect').value;
+            if (!selectedClass) {
+                showAlert('请先选择班级！', 'warning');
+                return;
+            }
+            
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('studentSection').style.display = 'block';
+            document.getElementById('currentClassName').textContent = selectedClass;
+            
+            loadStudents(selectedClass);
+        }
+        
+        // 加载学生列表
+        function loadStudents(className) {
+            const students = studentData.filter(s => s.className === className);
+            const tbody = document.getElementById('studentTableBody');
+            tbody.innerHTML = '';
+            
+            students.forEach((student, index) => {
+                const row = document.createElement('tr');
+                const isDropout = dropoutData[student.id] || false;
+                
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>
+                        <div class="name-gender">
+                            <span>${student.name}</span>
+                            <span class="gender">${student.gender}</span>
+                        </div>
+                    </td>
+                    <td>${student.className}</td>
+                    <td>
+                        <input type="checkbox" 
+                               id="dropout_${student.id}"
+                               ${isDropout ? 'checked' : ''}
+                               onchange="toggleDropout(${student.id})">
+                        <label for="dropout_${student.id}">已流失</label>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // 切换流失状态
+        function toggleDropout(studentId) {
+            const checkbox = document.getElementById(`dropout_${studentId}`);
+            dropoutData[studentId] = checkbox.checked;
+            localStorage.setItem('dropoutData', JSON.stringify(dropoutData));
+            
+            // 静默自动同步到云端（不显示通知）
+            syncToCloud(false);
+        }
+        
+        // 保存班级数据
+        async function saveClassData() {
+            const className = document.getElementById('currentClassName').textContent;
+            classStatus[className] = true;
+            localStorage.setItem('classStatus', JSON.stringify(classStatus));
+            
+            showAlert(`✅ ${className} 数据保存成功！正在同步到云端...`, 'success');
+            
+            // 同步到云端并显示结果
+            await syncToCloud(true);
+        }
+        
+        // 清空当前班级的流失勾选
+        function clearCurrentClassSelections() {
+            const className = document.getElementById('currentClassName').textContent;
+            
+            if (confirm(`确定要清空 ${className} 的所有流失勾选吗？\n\n此操作将取消所有学生的流失标记，相当于重新开始登记。`)) {
+                // 获取当前班级的所有学生
+                const currentClassStudents = studentData.filter(student => student.className === className);
+                
+                // 清空这些学生的流失状态
+                currentClassStudents.forEach(student => {
+                    const checkbox = document.getElementById(`dropout_${student.id}`);
+                    if (checkbox) {
+                        checkbox.checked = false;
+                    }
+                    // 从dropoutData中删除该学生的记录
+                    delete dropoutData[student.id];
+                });
+                
+                // 保存到本地存储
+                localStorage.setItem('dropoutData', JSON.stringify(dropoutData));
+                
+                // 静默同步到云端
+                syncToCloud(false);
+                
+                showAlert(`✅ 已清空 ${className} 的所有流失勾选，可以重新登记`, 'success');
+            }
+        }
+        
+        // 返回登录页面
+        function backToLogin() {
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('studentSection').style.display = 'none';
+        }
+        
+        // 同步到云端（支持静默模式）
+        async function syncToCloud(showNotification = true) {
+            updateSyncStatus('syncing');
+            
+            try {
+                const response = await fetch('/api/data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        studentData: studentData,
+                        dropoutData: dropoutData,
+                        classStatus: classStatus
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 同时保存到本地作为备份
+                    localStorage.setItem('studentData', JSON.stringify(studentData));
+                    localStorage.setItem('dropoutData', JSON.stringify(dropoutData));
+                    localStorage.setItem('classStatus', JSON.stringify(classStatus));
+                    localStorage.setItem('lastSyncTime', result.timestamp);
+                    
+                    if (showNotification) {
+                        showAlert('✅ 数据已同步到云端！所有设备现在可以访问最新数据', 'success');
+                    }
+                    updateSyncStatus('synced');
+                } else {
+                    throw new Error(result.message || '同步失败');
+                }
+            } catch (error) {
+                console.error('同步错误:', error);
+                if (showNotification) {
+                    showAlert('❌ 云端同步失败: ' + error.message + '，数据已保存到本地', 'warning');
+                }
+                
+                // 失败时仍然保存到本地
+                localStorage.setItem('studentData', JSON.stringify(studentData));
+                localStorage.setItem('dropoutData', JSON.stringify(dropoutData));
+                localStorage.setItem('classStatus', JSON.stringify(classStatus));
+                
+                updateSyncStatus('error');
+            }
+        }
+        
+        // 手动同步到云端（保持兼容性）
+        async function manualSync() {
+            await syncToCloud(true);
+        }
+        
+        // 下载备份
+        function downloadBackup() {
+            const backupData = {
+                studentData: studentData,
+                dropoutData: dropoutData,
+                classStatus: classStatus,
+                exportTime: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            const dataStr = JSON.stringify(backupData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `学生流失统计备份_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            showAlert('📥 备份文件下载成功！', 'success');
+        }
+        
+        // 清空所有数据
+        function clearAllData() {
+            if (confirm('确定要清空所有数据吗？此操作不可恢复！')) {
+                studentData = [];
+                dropoutData = {};
+                classStatus = {};
+                
+                localStorage.removeItem('studentData');
+                localStorage.removeItem('dropoutData');
+                localStorage.removeItem('classStatus');
+                
+                updateDataInfo();
+                document.getElementById('collegeSelect').innerHTML = '<option value="">请先导入数据或选择学院</option>';
+                document.getElementById('classSelect').innerHTML = '<option value="">请先选择学院</option>';
+                
+                showAlert('🗑️ 所有数据已清空！', 'warning');
+                updateSyncStatus();
+            }
+        }
+        
+        // 导出数据
+        function exportData() {
+            const exportCode = document.getElementById('exportCode').value;
+            if (exportCode !== '9090') {
+                showAlert('导出验证码错误！请输入：9090', 'warning');
+                return;
+            }
+            
+            if (studentData.length === 0) {
+                showAlert('暂无数据可导出，请先导入学生数据', 'warning');
+                return;
+            }
+            
+            const exportStudentData = studentData.map(student => ({
+                '序号': student.id,
+                '姓名': student.name,
+                '性别': student.gender,
+                '学院': student.collegeName,
+                '班级': student.className,
+                '专业': student.major,
+                '是否流失': dropoutData[student.id] ? '是' : '否'
+            }));
+            
+            // 统计数据
+            const totalStudents = studentData.length;
+            const dropoutCount = Object.values(dropoutData).filter(status => status).length;
+            
+            const summaryData = [
+                {'项目': '总学生数', '数值': totalStudents},
+                {'项目': '流失学生数', '数值': dropoutCount},
+                {'项目': '在校学生数', '数值': totalStudents - dropoutCount},
+                {'项目': '流失率', '数值': `${(dropoutCount / totalStudents * 100).toFixed(2)}%`}
+            ];
+            
+            const wb = XLSX.utils.book_new();
+            
+            // 学生详细数据
+            const ws1 = XLSX.utils.json_to_sheet(exportStudentData);
+            formatWorksheet(ws1, 'student', 7);  // 普通导出7列
+            XLSX.utils.book_append_sheet(wb, ws1, "学生详细数据");
+            
+            // 统计汇总
+            const ws2 = XLSX.utils.json_to_sheet(summaryData);
+            formatWorksheet(ws2, 'summary');
+            XLSX.utils.book_append_sheet(wb, ws2, "统计汇总");
+            
+            const timestamp = new Date().toISOString().split('T')[0];
+            XLSX.writeFile(wb, `学生流失统计_${timestamp}.xlsx`);
+            
+            showAlert('📊 Excel文件导出成功！', 'success');
+        }
+        
+        // 更新同步状态
+        function updateSyncStatus(status = 'ready') {
+            const statusEl = document.getElementById('syncStatus');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            switch (status) {
+                case 'loading':
+                    statusEl.innerHTML = '🔄 正在从云端加载数据...';
+                    statusEl.style.background = '#fff3cd';
+                    break;
+                case 'syncing':
+                    statusEl.innerHTML = '⬆️ 正在同步到云端...';
+                    statusEl.style.background = '#fff3cd';
+                    break;
+                case 'synced':
+                    statusEl.innerHTML = `☁️ 云端同步完成 - ${timestamp}`;
+                    statusEl.style.background = '#d4edda';
+                    break;
+                case 'saved':
+                    statusEl.innerHTML = `💾 数据已保存 - ${timestamp}`;
+                    statusEl.style.background = '#d4edda';
+                    break;
+                case 'local':
+                    statusEl.innerHTML = `📱 使用本地数据 - ${timestamp}`;
+                    statusEl.style.background = '#d1ecf1';
+                    break;
+                case 'offline':
+                    statusEl.innerHTML = `📡 离线模式 - ${timestamp}`;
+                    statusEl.style.background = '#f8d7da';
+                    break;
+                case 'error':
+                    statusEl.innerHTML = `❌ 同步失败 - ${timestamp}`;
+                    statusEl.style.background = '#f8d7da';
+                    break;
+                default:
+                    statusEl.innerHTML = `📡 准备就绪 - ${timestamp}`;
+                    statusEl.style.background = '#e3f2fd';
+            }
+        }
+        
+        // 显示提示信息
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            alertContainer.appendChild(alert);
+            setTimeout(() => alert.remove(), 5000);
+        }
+        
+        // 管理员权限控制
+        let isAdminMode = false;
+        const ADMIN_CODE = '9090';
+        
+        // 显示管理员验证
+        function showAdminAuth() {
+            document.getElementById('adminAuth').style.display = 'block';
+            document.getElementById('adminCode').focus();
+        }
+        
+        // 隐藏管理员验证
+        function hideAdminAuth() {
+            document.getElementById('adminAuth').style.display = 'none';
+            document.getElementById('adminCode').value = '';
+        }
+        
+        // 验证管理员代码
+        function verifyAdmin() {
+            const inputCode = document.getElementById('adminCode').value;
+            
+            if (inputCode === ADMIN_CODE) {
+                isAdminMode = true;
+                
+                // 隐藏验证界面
+                hideAdminAuth();
+                
+                // 显示管理员功能区域
+                document.getElementById('adminSection').style.display = 'block';
+                
+                // 隐藏普通管理员按钮
+                document.querySelector('.admin-panel').style.display = 'none';
+                
+                showAlert('✅ 管理员验证成功！现在可以使用数据管理功能', 'success');
+                
+                // 保存管理员状态（可选：页面刷新后需要重新验证）
+                sessionStorage.setItem('adminMode', 'true');
+                
+            } else {
+                showAlert('❌ 验证码错误！请输入正确的管理员验证码', 'warning');
+                document.getElementById('adminCode').value = '';
+                document.getElementById('adminCode').focus();
+            }
+        }
+        
+        // 管理员清空所有数据
+        async function clearAllDataAdmin() {
+            if (!isAdminMode) {
+                showAlert('❌ 需要管理员权限才能执行此操作', 'warning');
+                return;
+            }
+            
+            const confirmMsg = '⚠️ 确定要清空所有数据吗？\n\n此操作将删除：\n- 所有学生信息\n- 所有流失记录\n- 所有班级状态\n\n此操作不可恢复！';
+            
+            if (confirm(confirmMsg)) {
+                const doubleConfirm = prompt('请输入 "确认删除" 来完成操作：');
+                
+                if (doubleConfirm === '确认删除') {
+                    try {
+                        // 清空本地数据
+                        studentData = [];
+                        dropoutData = {};
+                        classStatus = {};
+                        
+                        // 清空本地存储
+                        localStorage.removeItem('studentData');
+                        localStorage.removeItem('dropoutData');
+                        localStorage.removeItem('classStatus');
+                        
+                        // 清空云端数据
+                        const response = await fetch('/api/data', {
+                            method: 'DELETE'
+                        });
+                        
+                        if (response.ok) {
+                            showAlert('✅ 所有数据已清空！云端和本地数据已同步删除', 'success');
+                        } else {
+                            showAlert('⚠️ 本地数据已清空，但云端清空可能失败', 'warning');
+                        }
+                        
+                        // 更新界面
+                        updateDataInfo();
+                        document.getElementById('collegeSelect').innerHTML = '<option value="">暂无数据</option>';
+                        document.getElementById('classSelect').innerHTML = '<option value="">请先导入数据</option>';
+                        
+                        // 隐藏管理员界面，回到普通模式
+                        exitAdminMode();
+                        
+                    } catch (error) {
+                        showAlert('❌ 清空数据时发生错误：' + error.message, 'danger');
+                    }
+                } else {
+                    showAlert('操作已取消', 'info');
+                }
+            }
+        }
+        
+        // 工作表格式化函数
+        function formatWorksheet(worksheet, type = 'student', columns = 8) {
+            if (!worksheet) return;
+            
+            // 获取工作表范围
+            const range = XLSX.utils.decode_range(worksheet['!ref']);
+            
+            // 设置列宽
+            if (type === 'student') {
+                if (columns === 8) {
+                    // 管理员导出：包含流失状态列
+                    worksheet['!cols'] = [
+                        {wch: 8},   // 序号 - 8字符宽度
+                        {wch: 12},  // 姓名 - 12字符宽度
+                        {wch: 6},   // 性别 - 6字符宽度
+                        {wch: 20},  // 学院 - 20字符宽度
+                        {wch: 25},  // 班级 - 25字符宽度
+                        {wch: 20},  // 专业 - 20字符宽度
+                        {wch: 10},  // 是否流失 - 10字符宽度
+                        {wch: 10}   // 流失状态 - 10字符宽度
+                    ];
+                } else {
+                    // 普通导出：没有流失状态列
+                    worksheet['!cols'] = [
+                        {wch: 8},   // 序号 - 8字符宽度
+                        {wch: 12},  // 姓名 - 12字符宽度
+                        {wch: 6},   // 性别 - 6字符宽度
+                        {wch: 20},  // 学院 - 20字符宽度
+                        {wch: 25},  // 班级 - 25字符宽度
+                        {wch: 20},  // 专业 - 20字符宽度
+                        {wch: 10}   // 是否流失 - 10字符宽度
+                    ];
+                }
+            } else if (type === 'summary') {
+                worksheet['!cols'] = [
+                    {wch: 15},  // 项目 - 15字符宽度
+                    {wch: 15}   // 数值 - 15字符宽度
+                ];
+            }
+            
+            // 设置所有单元格格式
+            for (let R = range.s.r; R <= range.e.r; ++R) {
+                for (let C = range.s.c; C <= range.e.c; ++C) {
+                    const cellAddress = XLSX.utils.encode_cell({r: R, c: C});
+                    
+                    if (!worksheet[cellAddress]) continue;
+                    
+                    // 设置单元格格式
+                    worksheet[cellAddress].s = {
+                        alignment: {
+                            horizontal: 'center',  // 水平居中
+                            vertical: 'center'     // 垂直居中
+                        },
+                        border: {
+                            top: {style: 'thin', color: {rgb: '000000'}},
+                            bottom: {style: 'thin', color: {rgb: '000000'}},
+                            left: {style: 'thin', color: {rgb: '000000'}},
+                            right: {style: 'thin', color: {rgb: '000000'}}
+                        },
+                        font: {
+                            name: 'Microsoft YaHei',
+                            sz: 11
+                        }
+                    };
+                    
+                    // 表头行特殊格式
+                    if (R === 0) {
+                        worksheet[cellAddress].s.font.bold = true;
+                        worksheet[cellAddress].s.fill = {
+                            fgColor: {rgb: 'E3F2FD'}
+                        };
+                    }
+                }
+            }
+        }
+        
+        // 管理员导出数据（无需验证码）
+        function exportDataAdmin() {
+            if (!isAdminMode) {
+                showAlert('❌ 需要管理员权限才能执行此操作', 'warning');
+                return;
+            }
+            
+            if (studentData.length === 0) {
+                showAlert('❌ 暂无数据可导出，请先导入学生数据', 'warning');
+                return;
+            }
+            
+            try {
+                // 准备导出数据
+                const exportStudentData = studentData.map((student, index) => ({
+                    '序号': index + 1,
+                    '姓名': student.name,
+                    '性别': student.gender,
+                    '学院': student.collegeName,
+                    '班级': student.className,
+                    '专业': student.major,
+                    '是否流失': dropoutData[student.id] ? '是' : '否',
+                    '流失状态': dropoutData[student.id] ? '已流失' : '正常'
+                }));
+                
+                // 统计汇总数据
+                const totalStudents = studentData.length;
+                const dropoutCount = Object.values(dropoutData).filter(status => status).length;
+                const normalCount = totalStudents - dropoutCount;
+                
+                const summaryData = [
+                    {'项目': '总学生数', '数值': totalStudents},
+                    {'项目': '已流失人数', '数值': dropoutCount},
+                    {'项目': '正常人数', '数值': normalCount},
+                    {'项目': '流失率', '数值': `${(dropoutCount / totalStudents * 100).toFixed(2)}%`}
+                ];
+                
+                const wb = XLSX.utils.book_new();
+                
+                // 学生详细数据
+                const ws1 = XLSX.utils.json_to_sheet(exportStudentData);
+                formatWorksheet(ws1, 'student');
+                XLSX.utils.book_append_sheet(wb, ws1, "学生详细数据");
+                
+                // 统计汇总
+                const ws2 = XLSX.utils.json_to_sheet(summaryData);
+                formatWorksheet(ws2, 'summary');
+                XLSX.utils.book_append_sheet(wb, ws2, "统计汇总");
+                
+                const timestamp = new Date().toISOString().split('T')[0];
+                XLSX.writeFile(wb, `学生流失统计_管理员导出_${timestamp}.xlsx`);
+                
+                showAlert('✅ Excel文件导出成功！包含学生详细数据和统计汇总', 'success');
+                
+            } catch (error) {
+                showAlert('❌ 导出失败：' + error.message, 'warning');
+            }
+        }
+        
+        // 退出管理员模式
+        function exitAdminMode() {
+            isAdminMode = false;
+            document.getElementById('adminSection').style.display = 'none';
+            document.querySelector('.admin-panel').style.display = 'block';
+            sessionStorage.removeItem('adminMode');
+        }
+        
+        // 支持回车键确认验证码
+        document.addEventListener('DOMContentLoaded', function() {
+            const adminCodeInput = document.getElementById('adminCode');
+            if (adminCodeInput) {
+                adminCodeInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        verifyAdmin();
+                    }
+                });
+            }
+            
+            // 检查是否已经是管理员模式（页面刷新后重置）
+            if (sessionStorage.getItem('adminMode') === 'true') {
+                // 页面刷新后重置为普通模式，需要重新验证
+                sessionStorage.removeItem('adminMode');
+            }
+        });
+        
+        // 页面加载时启动
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
